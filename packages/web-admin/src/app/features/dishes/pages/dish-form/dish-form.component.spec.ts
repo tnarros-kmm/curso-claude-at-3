@@ -243,4 +243,45 @@ describe('DishFormComponent', () => {
       expect(component.fieldErrors()).toEqual({})
     })
   })
+
+  describe('errores por campo', () => {
+    it('nombre y precio son obligatorios y lo anuncian', async () => {
+      const { el } = await render()
+      for (const id of ['dish-name', 'dish-price']) {
+        expect(el.querySelector(`#${id}`)!.getAttribute('aria-required')).toBe('true')
+        expect(el.querySelector(`label[for=${id}]`)!.textContent).toContain('(obligatorio)')
+      }
+    })
+
+    it('sin error no hay aria-invalid', async () => {
+      const { el } = await render()
+      expect(el.querySelector('[aria-invalid]')).toBeNull()
+      expect(el.querySelector('.field-error')).toBeNull()
+    })
+
+    it('tras un envío incompleto marca aria-invalid y enlaza el mensaje', async () => {
+      const { el, fixture, component } = await render()
+      await component.onSubmit()
+      fixture.detectChanges()
+      const cases: [string, string, string][] = [
+        ['dish-name', 'name-error', 'El nombre es obligatorio'],
+        ['dish-price', 'price-error', 'El precio debe ser mayor que 0']
+      ]
+      for (const [id, errId, msg] of cases) {
+        const input = el.querySelector(`#${id}`)!
+        expect(input.getAttribute('aria-invalid')).toBe('true')
+        expect(input.getAttribute('aria-describedby')).toBe(errId)
+        expect(el.querySelector(`#${errId}`)!.textContent).toContain(msg)
+      }
+    })
+
+    it('solo marca el campo con error', async () => {
+      const { el, fixture, component } = await render()
+      component.form.name = 'Paella'
+      await component.onSubmit()
+      fixture.detectChanges()
+      expect(el.querySelector('#dish-name')!.hasAttribute('aria-invalid')).toBe(false)
+      expect(el.querySelector('#dish-price')!.getAttribute('aria-invalid')).toBe('true')
+    })
+  })
 })

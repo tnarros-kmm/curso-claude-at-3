@@ -161,3 +161,18 @@ fieldset.ingredients-section {
   white-space: nowrap;
   border: 0;
 }
+
+.required {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.field-error {
+  margin: 0;
+  font-size: 13px;
+  color: #fca5a5;
+}
+
+.form-control[aria-invalid='true'] {
+  border-color: #f87171;
+}
