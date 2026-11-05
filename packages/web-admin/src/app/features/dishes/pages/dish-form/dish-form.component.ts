@@ -31,6 +31,7 @@ export class DishFormComponent implements OnInit {
   loading = signal(false)
   error = signal<string | null>(null)
   fieldErrors = signal<DishFormErrors>({})
+  liveMessage = signal('')
   errorSummary = computed(() => {
     const e = this.fieldErrors()
     const items: { fieldId: string; message: string }[] = []
@@ -110,21 +111,38 @@ export class DishFormComponent implements OnInit {
     this.host.nativeElement.querySelector<HTMLElement>(`#${fieldId}`)?.focus()
   }
 
+  private focusAfterRender(selector: string): void {
+    afterNextRender(
+      () => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(),
+      { injector: this.injector }
+    )
+  }
+
+  private plainIngredientName(ingredientId: string): string {
+    return this.ingredientStore.ingredients().find(i => i.id === ingredientId)?.name ?? ingredientId
+  }
+
   addIngredient(): void {
     if (!this.newIngredientId || this.newIngredientQty <= 0) return
     const exists = this.form.ingredients.find(i => i.ingredientId === this.newIngredientId)
     if (exists) return
 
+    this.liveMessage.set(`Ingrediente ${this.plainIngredientName(this.newIngredientId)} añadido`)
     this.form.ingredients = [
       ...this.form.ingredients,
       { ingredientId: this.newIngredientId, quantity: this.newIngredientQty }
     ]
     this.newIngredientId = ''
     this.newIngredientQty = 1
+    this.focusAfterRender('#new-ingredient')
   }
 
   removeIngredient(ingredientId: string): void {
+    const index = this.form.ingredients.findIndex(i => i.ingredientId === ingredientId)
+    this.liveMessage.set(`Ingrediente ${this.plainIngredientName(ingredientId)} eliminado`)
     this.form.ingredients = this.form.ingredients.filter(i => i.ingredientId !== ingredientId)
+    const hasNext = index >= 0 && index < this.form.ingredients.length
+    this.focusAfterRender(hasNext ? `.ingredient-chips li:nth-child(${index + 1}) button` : '#new-ingredient')
   }
 
   getIngredientName(ingredientId: string): string {

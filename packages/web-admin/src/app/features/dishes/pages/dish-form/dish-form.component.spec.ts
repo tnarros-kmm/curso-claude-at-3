@@ -340,4 +340,48 @@ describe('DishFormComponent', () => {
       expect(alert.textContent).toContain('Fallo API')
     })
   })
+
+  describe('anuncios y foco en ingredientes', () => {
+    const dish = {
+      name: 'X', description: null, price: 5, category: 'postre', available: true,
+      ingredients: [{ ingredientId: 'ing-1', quantity: 2 }, { ingredientId: 'ing-2', quantity: 1 }]
+    }
+
+    it('existe una región aria-live polite vacía al inicio', async () => {
+      const { el } = await render()
+      const live = el.querySelector('[aria-live=polite]')!
+      expect(live).toBeTruthy()
+      expect(live.textContent?.trim()).toBe('')
+    })
+
+    it('al añadir anuncia y devuelve el foco al select de ingrediente', async () => {
+      const { el, fixture } = await render()
+      const sel = el.querySelector<HTMLSelectElement>('#new-ingredient')!
+      sel.value = 'ing-1'
+      sel.dispatchEvent(new Event('change'))
+      el.querySelector<HTMLButtonElement>('button[aria-label="Añadir ingrediente"]')!.click()
+      fixture.detectChanges()
+      await fixture.whenStable()
+      expect(el.querySelector('[aria-live=polite]')!.textContent).toContain('Ingrediente Tomate añadido')
+      expect(document.activeElement).toBe(sel)
+    })
+
+    it('al quitar anuncia y pasa el foco al botón del siguiente chip', async () => {
+      const { el, fixture } = await render({ dishId: 'd-1', dish })
+      el.querySelector<HTMLButtonElement>('ul li button')!.click()
+      fixture.detectChanges()
+      await fixture.whenStable()
+      expect(el.querySelector('[aria-live=polite]')!.textContent).toContain('Ingrediente Tomate eliminado')
+      expect(document.activeElement).toBe(el.querySelector('ul li button'))
+      expect(document.activeElement!.getAttribute('aria-label')).toBe('Quitar Queso (g)')
+    })
+
+    it('al quitar el último chip el foco pasa al select', async () => {
+      const { el, fixture } = await render({ dishId: 'd-1', dish: { ...dish, ingredients: [dish.ingredients[0]] } })
+      el.querySelector<HTMLButtonElement>('ul li button')!.click()
+      fixture.detectChanges()
+      await fixture.whenStable()
+      expect(document.activeElement).toBe(el.querySelector('#new-ingredient'))
+    })
+  })
 })
