@@ -78,4 +78,25 @@ describe('DishFormComponent', () => {
       expect(new Set(ids).size).toBe(ids.length)
     })
   })
+
+  describe('encabezados y agrupación', () => {
+    it('hay un único h1 "Nuevo plato"', async () => {
+      const { el } = await render()
+      const h1 = el.querySelectorAll('h1')
+      expect(h1.length).toBe(1)
+      expect(h1[0].textContent?.trim()).toBe('Nuevo plato')
+    })
+
+    it('en edición el h1 es "Editar plato"', async () => {
+      const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
+      const { el } = await render({ dishId: 'd-1', dish })
+      expect(el.querySelector('h1')?.textContent?.trim()).toBe('Editar plato')
+    })
+
+    it('el fieldset de ingredientes tiene legend "Ingredientes del plato"', async () => {
+      const { el } = await render()
+      const legend = el.querySelector('fieldset > legend')
+      expect(legend?.textContent?.trim()).toBe('Ingredientes del plato')
+    })
+  })
 })

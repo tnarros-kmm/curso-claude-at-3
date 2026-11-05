@@ -4,7 +4,7 @@
       <a [routerLink]="listUrl" class="back-link">
         <lucide-icon name="chevron-left" [size]="18"></lucide-icon>
       </a>
-      <div class="fake-title">{{ pageTitle }}</div>
+      <h1 class="page-title">{{ pageTitle }}</h1>
     </div>
   </div>
 
@@ -47,8 +47,8 @@
       </div>
     </div>
 
-    <div class="ingredients-section">
-      <div class="fake-subtitle">Ingredientes del plato</div>
+    <fieldset class="ingredients-section">
+      <legend class="section-legend">Ingredientes del plato</legend>
 
       @if (form.ingredients.length > 0) {
         <div class="ingredient-chips">
@@ -77,7 +77,7 @@
           <lucide-icon name="plus" [size]="14"></lucide-icon>
         </div>
       </div>
-    </div>
+    </fieldset>
 
     <div class="form-actions">
       <div class="btn btn-secondary" [routerLink]="listUrl">Cancelar</div>

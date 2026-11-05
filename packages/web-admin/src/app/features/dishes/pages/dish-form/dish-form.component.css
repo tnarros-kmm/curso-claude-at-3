@@ -113,7 +113,8 @@ select.form-control {
   padding-right: 32px;
 }
 
-.fake-title {
+.page-title {
+  margin: 0;
   font-size: 22px;
   font-weight: 600;
   color: var(--text-primary);
@@ -126,7 +127,16 @@ select.form-control {
   color: var(--text-secondary);
 }
 
-.fake-subtitle {
+fieldset.ingredients-section {
+  border: 0;
+  border-top: 1px solid var(--border-color);
+  margin: 24px 0 0;
+  padding: 20px 0 0;
+  min-width: 0;
+}
+
+.section-legend {
+  padding: 0;
   font-size: 14px;
   font-weight: 600;
   color: var(--text-primary);
