@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.angular/
+*.db
+*.db-journal
+data/*.db
+.env
+.env.*
+.DS_Store
