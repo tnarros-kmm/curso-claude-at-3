@@ -69,20 +69,20 @@ No aplica `src/docs/openapi.js`: no cambia ningún endpoint.
 - [x] 17. E2E axe `e2e/dish-form.a11y.spec.ts`: abrir `/restaurants/rest-1/dishes/new`, `AxeBuilder.withTags(['wcag2a','wcag2aa','wcag22aa']).analyze()` y esperar `violations` vacío; repetir con el formulario en estado de error y en edición. (10 min)
 - [x] 18. E2E con vídeo `e2e/dish-form.keyboard.spec.ts` (contexto con `recordVideo`, `slowMo`/pausas cortas), **solo `keyboard.press/type`, sin ratón**: entrar al formulario con Tab/Enter desde la lista; rellenar y modificar datos; añadir y quitar ingredientes; Guardar incompleto → errores visibles; corregir; Guardar → vuelve a la lista y el plato aparece. Guardar el vídeo con `page.video().saveAs('e2e-videos/dish-form-keyboard.webm')` en `afterEach`. (10 min)
 - [x] 19. Scripts raíz `test:admin` (Vitest con cobertura) y `e2e:admin`, ignorar `test-results/` y `playwright-report/`, verificar que existe `e2e-videos/dish-form-keyboard.webm` y que se reproduce. (5 min)
-- [ ] 20. Ejecutar `npm test` (API) y `npm run test:admin` y verificar cobertura ≥ 80 % en `dish-form.component.ts` y `dish-form.validation.ts`; ejecutar `npm run e2e:admin` y `npm run build -w @resttek/web-admin` para comprobar que no hay regresiones (10 min)
+- [x] 20. Ejecutar `npm test` (API) y `npm run test:admin` y verificar cobertura ≥ 80 % en `dish-form.component.ts` y `dish-form.validation.ts`; ejecutar `npm run e2e:admin` y `npm run build -w @resttek/web-admin` para comprobar que no hay regresiones (10 min)
 
 ## Criterios de aceptación
 
-- [ ] Dado el formulario de nuevo plato, cuando se recorre con Tab, entonces el orden es: volver → nombre → precio → categoría → disponible → descripción → ingrediente → cantidad → añadir → (quitar de cada chip) → Cancelar → Guardar, y cada elemento tiene foco visible.
-- [ ] Dado un campo del formulario, cuando un lector de pantalla lo enfoca, entonces anuncia su etiqueta, si es obligatorio y su error asociado (`label for`, `aria-required`, `aria-describedby`).
-- [ ] Dado un envío con nombre vacío o precio ≤ 0, cuando se pulsa Guardar (Enter/Espacio), entonces no se llama a la API, se muestran los errores (`role="alert"`) y el foco va al primer campo inválido.
-- [ ] Dado un ingrediente en la lista, cuando se pulsa su botón "Quitar X" o "Añadir ingrediente" con teclado, entonces se actualiza la lista y se anuncia el cambio en una región `aria-live`.
-- [ ] Dado el formulario (nuevo, con errores y edición), cuando se ejecuta axe con etiquetas `wcag2a`, `wcag2aa` y `wcag22aa`, entonces no hay violaciones.
-- [ ] Dado el test e2e de teclado, cuando termina, entonces existe `e2e-videos/dish-form-keyboard.webm` donde se ve, sin usar el ratón: modificar datos, añadir y quitar un ingrediente, envío incompleto con errores, creación correcta y el plato en la lista.
-- [ ] Los tests unitarios de cada tarea se escribieron antes del código y pasan con Vitest.
-- [ ] `npm test` y `npm run test:admin` pasan con cobertura ≥ 80 % (líneas, ramas, funciones) en los ficheros modificados.
-- [ ] `src/docs/openapi.js` actualizado si cambia algún endpoint o esquema (no aplica: no hay cambios de API).
-- [ ] Sin regresiones en los tests existentes de la API ni en el build de `web-admin`.
+- [x] Dado el formulario de nuevo plato, cuando se recorre con Tab, entonces el orden es: volver → nombre → precio → categoría → disponible → descripción → ingrediente → cantidad → añadir → (quitar de cada chip) → Cancelar → Guardar, y cada elemento tiene foco visible.
+- [x] Dado un campo del formulario, cuando un lector de pantalla lo enfoca, entonces anuncia su etiqueta, si es obligatorio y su error asociado (`label for`, `aria-required`, `aria-describedby`).
+- [x] Dado un envío con nombre vacío o precio ≤ 0, cuando se pulsa Guardar (Enter/Espacio), entonces no se llama a la API, se muestran los errores (`role="alert"`) y el foco va al primer campo inválido.
+- [x] Dado un ingrediente en la lista, cuando se pulsa su botón "Quitar X" o "Añadir ingrediente" con teclado, entonces se actualiza la lista y se anuncia el cambio en una región `aria-live`.
+- [x] Dado el formulario (nuevo, con errores y edición), cuando se ejecuta axe con etiquetas `wcag2a`, `wcag2aa` y `wcag22aa`, entonces no hay violaciones.
+- [x] Dado el test e2e de teclado, cuando termina, entonces existe `e2e-videos/dish-form-keyboard.webm` donde se ve, sin usar el ratón: modificar datos, añadir y quitar un ingrediente, envío incompleto con errores, creación correcta y el plato en la lista.
+- [x] Los tests unitarios de cada tarea se escribieron antes del código y pasan con Vitest.
+- [x] `npm test` y `npm run test:admin` pasan con cobertura ≥ 80 % (líneas, ramas, funciones) en los ficheros modificados.
+- [x] `src/docs/openapi.js` actualizado si cambia algún endpoint o esquema (no aplica: no hay cambios de API).
+- [x] Sin regresiones en los tests existentes de la API ni en el build de `web-admin`.
 
 ## Notas y riesgos
 

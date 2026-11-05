@@ -2,7 +2,7 @@ import { importProvidersFrom, provideZonelessChangeDetection, signal } from '@an
 import { LucideAngularModule, ChevronLeft, Plus, Trash2 } from 'lucide-angular'
 import { ComponentFixture, TestBed } from '@angular/core/testing'
 import { ActivatedRoute, Router, provideRouter } from '@angular/router'
-import { of } from 'rxjs'
+import { of, throwError } from 'rxjs'
 import { vi } from 'vitest'
 import { DishFormComponent } from './dish-form.component'
 import { DishStore } from '../../store/dish.store'
@@ -17,11 +17,14 @@ export const INGREDIENTS = [
 interface RenderOptions {
   dishId?: string
   dish?: unknown
+  loadError?: boolean
 }
 
 async function render(options: RenderOptions = {}) {
   const store = { create: vi.fn().mockResolvedValue(undefined), update: vi.fn().mockResolvedValue(undefined) }
-  const service = { getById: vi.fn().mockReturnValue(of(options.dish ?? null)) }
+  const service = {
+    getById: vi.fn().mockReturnValue(options.loadError ? throwError(() => new Error('x')) : of(options.dish ?? null))
+  }
   const ingredientStore = { ingredients: signal(INGREDIENTS), loadByRestaurant: vi.fn() }
   const route = {
     parent: { snapshot: { params: { restaurantId: 'rest-1' } } },
@@ -431,6 +434,74 @@ describe('DishFormComponent', () => {
       const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
       const { el } = await render({ dishId: 'd-1', dish })
       expect(el.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(false)
+    })
+  })
+
+  describe('ramas adicionales', () => {
+    it('muestra un error accesible si no se puede cargar el plato', async () => {
+      const { el } = await render({ dishId: 'd-1', loadError: true })
+      expect(el.querySelector('.alert-error')!.textContent).toContain('No se pudo cargar el plato.')
+    })
+
+    it('en edición guarda con update', async () => {
+      const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
+      const { component, store, navigate } = await render({ dishId: 'd-1', dish })
+      await component.onSubmit()
+      expect(store.update).toHaveBeenCalledWith('rest-1', 'd-1', component.form)
+      expect(store.create).not.toHaveBeenCalled()
+      expect(navigate).toHaveBeenCalled()
+    })
+
+    it('usa un mensaje por defecto si la API no devuelve mensaje', async () => {
+      const { component, store } = await render()
+      store.create.mockRejectedValue({})
+      component.form.name = 'Paella'
+      component.form.price = 5
+      await component.onSubmit()
+      expect(component.error()).toBe('Error al guardar el plato.')
+    })
+
+    it('no añade ingrediente sin selección o con cantidad no positiva', async () => {
+      const { component } = await render()
+      component.addIngredient()
+      component.newIngredientId = 'ing-1'
+      component.newIngredientQty = 0
+      component.addIngredient()
+      expect(component.form.ingredients).toEqual([])
+    })
+
+    it('quitar un ingrediente inexistente no rompe y el foco va al select', async () => {
+      const { component } = await render()
+      component.removeIngredient('nope')
+      expect(component.liveMessage()).toBe('Ingrediente nope eliminado')
+    })
+
+    it('getCategoryLabel y getIngredientName tienen valor de respaldo', async () => {
+      const { component } = await render()
+      expect(component.getCategoryLabel('otra')).toBe('otra')
+      expect(component.getCategoryLabel('postre')).toBe('Postre')
+      expect(component.getIngredientName('desconocido')).toBe('desconocido')
+    })
+
+    it('sin restaurantId en la ruta no carga ingredientes', async () => {
+      TestBed.resetTestingModule()
+      const loadByRestaurant = vi.fn()
+      TestBed.configureTestingModule({
+        imports: [DishFormComponent],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter([]),
+          importProvidersFrom(LucideAngularModule.pick({ ChevronLeft, Plus, Trash2 })),
+          { provide: DishStore, useValue: {} },
+          { provide: DishService, useValue: {} },
+          { provide: IngredientStore, useValue: { ingredients: signal([]), loadByRestaurant } },
+          { provide: ActivatedRoute, useValue: { parent: null, snapshot: { paramMap: { get: () => null } } } }
+        ]
+      })
+      const fixture = TestBed.createComponent(DishFormComponent)
+      fixture.detectChanges()
+      expect(loadByRestaurant).not.toHaveBeenCalled()
+      expect(fixture.componentInstance.restaurantId).toBe('')
     })
   })
 })
