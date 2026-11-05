@@ -40,3 +40,15 @@ export async function createDishViaApi(request: APIRequestContext, name: string)
   if (!response.ok()) throw new Error(`No se pudo crear el plato: ${response.status()}`)
   return (await response.json()).id
 }
+
+/** Borra por API los platos de rest-1 cuyo nombre coincide (limpieza para que el e2e sea repetible). */
+export async function deleteDishesByName(request: APIRequestContext, name: string): Promise<void> {
+  const login = await request.post(`${API_URL}/auth/login`, { data: { email: ADMIN_EMAIL, password: ADMIN_EMAIL } })
+  const { token } = await login.json()
+  const headers = { Authorization: `Bearer ${token}` }
+  const list = await request.get(`${API_URL}/restaurants/rest-1/dishes`, { headers })
+  const dishes: { id: string; name: string }[] = await list.json()
+  for (const dish of dishes.filter(d => d.name === name)) {
+    await request.delete(`${API_URL}/restaurants/rest-1/dishes/${dish.id}`, { headers })
+  }
+}
