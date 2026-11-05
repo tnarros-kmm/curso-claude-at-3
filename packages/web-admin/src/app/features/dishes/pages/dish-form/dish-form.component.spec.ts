@@ -210,4 +210,37 @@ describe('DishFormComponent', () => {
       expect(el.querySelectorAll('ul li').length).toBe(1)
     })
   })
+
+  describe('onSubmit con validación', () => {
+    it('un envío vacío no llama al store ni navega', async () => {
+      const { component, store, navigate } = await render()
+      await component.onSubmit()
+      expect(store.create).not.toHaveBeenCalled()
+      expect(navigate).not.toHaveBeenCalled()
+      expect(component.fieldErrors()).toEqual({
+        name: 'El nombre es obligatorio',
+        price: 'El precio debe ser mayor que 0'
+      })
+    })
+
+    it('con datos válidos crea y navega a la lista', async () => {
+      const { component, store, navigate } = await render()
+      component.form.name = 'Paella'
+      component.form.price = 12
+      await component.onSubmit()
+      expect(store.create).toHaveBeenCalledWith('rest-1', component.form)
+      expect(navigate).toHaveBeenCalledWith(['/restaurants', 'rest-1', 'dishes'])
+      expect(component.fieldErrors()).toEqual({})
+    })
+
+    it('los errores se limpian al corregir y reenviar', async () => {
+      const { component } = await render()
+      await component.onSubmit()
+      expect(Object.keys(component.fieldErrors()).length).toBe(2)
+      component.form.name = 'Paella'
+      component.form.price = 12
+      await component.onSubmit()
+      expect(component.fieldErrors()).toEqual({})
+    })
+  })
 })

@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs'
 import { DishStore } from '../../store/dish.store'
 import { DishService } from '../../services/dish.service'
 import { IngredientStore } from '../../../ingredients/store/ingredient.store'
+import { validateDish, type DishFormErrors } from './dish-form.validation'
 import type { CreateDishDto, DishCategory } from '../../models/dish.model'
 
 @Component({
@@ -27,6 +28,7 @@ export class DishFormComponent implements OnInit {
   restaurantId: string = ''
   loading = signal(false)
   error = signal<string | null>(null)
+  fieldErrors = signal<DishFormErrors>({})
 
   categories: DishCategory[] = ['entrante', 'principal', 'postre', 'bebida']
 
@@ -118,6 +120,10 @@ export class DishFormComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     this.error.set(null)
+    const errors = validateDish(this.form)
+    this.fieldErrors.set(errors)
+    if (Object.keys(errors).length > 0) return
+
     this.loading.set(true)
     try {
       if (this.isEditing && this.dishId) {
