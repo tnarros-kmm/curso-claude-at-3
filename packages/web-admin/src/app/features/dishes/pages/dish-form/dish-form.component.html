@@ -9,7 +9,18 @@
   </div>
 
   @if (error()) {
-    <div class="alert-error">{{ error() }}</div>
+    <div class="alert-error" role="alert">{{ error() }}</div>
+  }
+
+  @if (errorSummary().length > 0) {
+    <div class="error-summary" role="alert">
+      <p class="error-summary-title">Revisa los siguientes campos:</p>
+      <ul>
+        @for (item of errorSummary(); track item.fieldId) {
+          <li><a [href]="'#' + item.fieldId" (click)="focusField(item.fieldId, $event)">{{ item.message }}</a></li>
+        }
+      </ul>
+    </div>
   }
 
   <form class="card form-card" (ngSubmit)="onSubmit()" novalidate>

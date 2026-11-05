@@ -284,4 +284,60 @@ describe('DishFormComponent', () => {
       expect(el.querySelector('#dish-price')!.getAttribute('aria-invalid')).toBe('true')
     })
   })
+
+  describe('resumen de errores y foco', () => {
+    async function submitInvalid(opts: { name?: string; price?: number } = {}) {
+      const r = await render()
+      if (opts.name !== undefined) r.component.form.name = opts.name
+      if (opts.price !== undefined) r.component.form.price = opts.price
+      await r.component.onSubmit()
+      r.fixture.detectChanges()
+      await r.fixture.whenStable()
+      return r
+    }
+
+    it('el foco va al nombre cuando falta el nombre', async () => {
+      const { el } = await submitInvalid({ price: 5 })
+      expect(document.activeElement).toBe(el.querySelector('#dish-name'))
+    })
+
+    it('el foco va al precio si solo falta el precio', async () => {
+      const { el } = await submitInvalid({ name: 'Paella' })
+      expect(document.activeElement).toBe(el.querySelector('#dish-price'))
+    })
+
+    it('el resumen role=alert lista los errores con enlaces a los campos', async () => {
+      const { el } = await submitInvalid()
+      const summary = el.querySelector('[role=alert].error-summary')!
+      expect(summary).toBeTruthy()
+      const links = Array.from(summary.querySelectorAll('a'))
+      expect(links.map(l => l.getAttribute('href'))).toEqual(['#dish-name', '#dish-price'])
+      expect(links[0].textContent).toContain('El nombre es obligatorio')
+    })
+
+    it('el enlace del resumen enfoca el campo', async () => {
+      const { el, fixture } = await submitInvalid()
+      const link = el.querySelectorAll<HTMLAnchorElement>('.error-summary a')[1]
+      link.click()
+      fixture.detectChanges()
+      expect(document.activeElement).toBe(el.querySelector('#dish-price'))
+    })
+
+    it('sin errores no hay resumen', async () => {
+      const { el } = await render()
+      expect(el.querySelector('.error-summary')).toBeNull()
+    })
+
+    it('el error de API se muestra con role=alert', async () => {
+      const { el, fixture, component, store } = await render()
+      store.create.mockRejectedValue({ error: { message: 'Fallo API' } })
+      component.form.name = 'Paella'
+      component.form.price = 5
+      await component.onSubmit()
+      fixture.detectChanges()
+      const alert = el.querySelector('.alert-error')!
+      expect(alert.getAttribute('role')).toBe('alert')
+      expect(alert.textContent).toContain('Fallo API')
+    })
+  })
 })

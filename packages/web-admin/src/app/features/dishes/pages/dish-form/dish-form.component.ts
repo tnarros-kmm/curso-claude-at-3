@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core'
+import { afterNextRender, Component, computed, ElementRef, inject, Injector, OnInit, signal } from '@angular/core'
 import { FormsModule } from '@angular/forms'
 import { ActivatedRoute, Router, RouterLink } from '@angular/router'
 import { LucideAngularModule } from 'lucide-angular'
@@ -22,6 +22,8 @@ export class DishFormComponent implements OnInit {
   readonly ingredientStore = inject(IngredientStore)
   private readonly route = inject(ActivatedRoute)
   private readonly router = inject(Router)
+  private readonly injector = inject(Injector)
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef)
 
   isEditing = false
   dishId: string | null = null
@@ -29,6 +31,13 @@ export class DishFormComponent implements OnInit {
   loading = signal(false)
   error = signal<string | null>(null)
   fieldErrors = signal<DishFormErrors>({})
+  errorSummary = computed(() => {
+    const e = this.fieldErrors()
+    const items: { fieldId: string; message: string }[] = []
+    if (e.name) items.push({ fieldId: 'dish-name', message: e.name })
+    if (e.price) items.push({ fieldId: 'dish-price', message: e.price })
+    return items
+  })
 
   categories: DishCategory[] = ['entrante', 'principal', 'postre', 'bebida']
 
@@ -96,6 +105,11 @@ export class DishFormComponent implements OnInit {
     }
   }
 
+  focusField(fieldId: string, event?: Event): void {
+    event?.preventDefault()
+    this.host.nativeElement.querySelector<HTMLElement>(`#${fieldId}`)?.focus()
+  }
+
   addIngredient(): void {
     if (!this.newIngredientId || this.newIngredientQty <= 0) return
     const exists = this.form.ingredients.find(i => i.ingredientId === this.newIngredientId)
@@ -122,7 +136,11 @@ export class DishFormComponent implements OnInit {
     this.error.set(null)
     const errors = validateDish(this.form)
     this.fieldErrors.set(errors)
-    if (Object.keys(errors).length > 0) return
+    if (Object.keys(errors).length > 0) {
+      const first = this.errorSummary()[0]
+      afterNextRender(() => this.focusField(first.fieldId), { injector: this.injector })
+      return
+    }
 
     this.loading.set(true)
     try {
