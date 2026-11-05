@@ -50,6 +50,8 @@ textarea.form-control {
 }
 
 .ingredient-chips {
+  list-style: none;
+  padding: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -69,6 +71,7 @@ textarea.form-control {
 }
 
 .chip-remove {
+  border: 0;
   background: transparent;
   color: var(--text-muted);
   padding: 2px;

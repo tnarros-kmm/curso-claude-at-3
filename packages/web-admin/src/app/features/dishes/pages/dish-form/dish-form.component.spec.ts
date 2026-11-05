@@ -184,4 +184,32 @@ describe('DishFormComponent', () => {
       expect(component.form.ingredients.length).toBe(1)
     })
   })
+
+  describe('quitar ingrediente', () => {
+    async function withIngredients() {
+      const r = await render()
+      r.component.form.ingredients = [
+        { ingredientId: 'ing-1', quantity: 2 },
+        { ingredientId: 'ing-2', quantity: 1 }
+      ]
+      r.fixture.detectChanges()
+      return r
+    }
+
+    it('los chips forman una lista semántica con botón "Quitar X"', async () => {
+      const { el } = await withIngredients()
+      expect(el.querySelectorAll('ul li').length).toBe(2)
+      const btns = Array.from(el.querySelectorAll<HTMLButtonElement>('ul li button'))
+      expect(btns.map(b => b.getAttribute('aria-label'))).toEqual(['Quitar Tomate (kg)', 'Quitar Queso (g)'])
+      btns.forEach(b => expect(b.type).toBe('button'))
+    })
+
+    it('al pulsar el botón se elimina el ingrediente', async () => {
+      const { el, fixture, component } = await withIngredients()
+      el.querySelector<HTMLButtonElement>('ul li button')!.click()
+      fixture.detectChanges()
+      expect(component.form.ingredients.map(i => i.ingredientId)).toEqual(['ing-2'])
+      expect(el.querySelectorAll('ul li').length).toBe(1)
+    })
+  })
 })

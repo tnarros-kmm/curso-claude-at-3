@@ -51,16 +51,16 @@
       <legend class="section-legend">Ingredientes del plato</legend>
 
       @if (form.ingredients.length > 0) {
-        <div class="ingredient-chips">
+        <ul class="ingredient-chips">
           @for (ing of form.ingredients; track ing.ingredientId) {
-            <div class="ingredient-chip">
+            <li class="ingredient-chip">
               <span>{{ getIngredientName(ing.ingredientId) }} — {{ ing.quantity }}</span>
-              <div class="chip-remove" (click)="removeIngredient(ing.ingredientId)">
+              <button type="button" class="chip-remove" [attr.aria-label]="'Quitar ' + getIngredientName(ing.ingredientId)" (click)="removeIngredient(ing.ingredientId)">
                 <lucide-icon name="trash-2" aria-hidden="true" [size]="12"></lucide-icon>
-              </div>
-            </div>
+              </button>
+            </li>
           }
-        </div>
+        </ul>
       }
 
       <div class="add-ingredient-row">
