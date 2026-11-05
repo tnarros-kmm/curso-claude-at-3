@@ -384,4 +384,53 @@ describe('DishFormComponent', () => {
       expect(document.activeElement).toBe(el.querySelector('#new-ingredient'))
     })
   })
+
+  describe('estado de guardado', () => {
+    it('con loading el botón está deshabilitado, aria-busy y hay un status', async () => {
+      const { el, fixture, component } = await render()
+      component.loading.set(true)
+      fixture.detectChanges()
+      const btn = el.querySelector<HTMLButtonElement>('button[type=submit]')!
+      expect(btn.disabled).toBe(true)
+      expect(btn.getAttribute('aria-busy')).toBe('true')
+      expect(el.querySelector('[role=status]')!.textContent).toContain('Guardando...')
+    })
+
+    it('sin loading el botón está habilitado y el status vacío', async () => {
+      const { el } = await render()
+      const btn = el.querySelector<HTMLButtonElement>('button[type=submit]')!
+      expect(btn.disabled).toBe(false)
+      expect(btn.hasAttribute('aria-busy')).toBe(false)
+      expect(el.querySelector('[role=status]')!.textContent?.trim()).toBe('')
+    })
+
+    it('no admite doble envío mientras guarda', async () => {
+      const { component, store } = await render()
+      let resolve!: () => void
+      store.create.mockReturnValue(new Promise<void>(r => (resolve = r)))
+      component.form.name = 'Paella'
+      component.form.price = 5
+      const first = component.onSubmit()
+      await component.onSubmit()
+      resolve()
+      await first
+      expect(store.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('se vuelve a habilitar tras un error de API', async () => {
+      const { el, fixture, component, store } = await render()
+      store.create.mockRejectedValue({ error: { message: 'Fallo' } })
+      component.form.name = 'Paella'
+      component.form.price = 5
+      await component.onSubmit()
+      fixture.detectChanges()
+      expect(el.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(false)
+    })
+
+    it('en edición el botón no queda atascado tras cargar el plato', async () => {
+      const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
+      const { el } = await render({ dishId: 'd-1', dish })
+      expect(el.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(false)
+    })
+  })
 })

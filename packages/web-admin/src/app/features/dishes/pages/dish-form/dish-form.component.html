@@ -101,7 +101,7 @@
 
     <div class="form-actions">
       <a class="btn btn-secondary" [routerLink]="listUrl">Cancelar</a>
-      <button type="submit" class="btn btn-primary">
+      <button type="submit" class="btn btn-primary" [disabled]="loading()" [attr.aria-busy]="loading() ? 'true' : null">
         @if (loading()) {
           Guardando...
         } @else {
@@ -110,4 +110,6 @@
       </button>
     </div>
   </form>
+
+  <p class="sr-only" role="status">{{ loading() ? 'Guardando...' : '' }}</p>
 </div>

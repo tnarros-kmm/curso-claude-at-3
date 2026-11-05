@@ -151,6 +151,7 @@ export class DishFormComponent implements OnInit {
   }
 
   async onSubmit(): Promise<void> {
+    if (this.loading()) return
     this.error.set(null)
     const errors = validateDish(this.form)
     this.fieldErrors.set(errors)
