@@ -27,3 +27,16 @@ export async function loginAsAdmin(request: APIRequestContext, email = ADMIN_EMA
   }
   writeFileSync(STORAGE_STATE, JSON.stringify(state))
 }
+
+/** Crea un plato por API (para tests de edición) y devuelve su id. */
+export async function createDishViaApi(request: APIRequestContext, name: string): Promise<string> {
+  const login = await request.post(`${API_URL}/auth/login`, { data: { email: ADMIN_EMAIL, password: ADMIN_EMAIL } })
+  const { token } = await login.json()
+  const headers = { Authorization: `Bearer ${token}` }
+  const response = await request.post(`${API_URL}/restaurants/rest-1/dishes`, {
+    headers,
+    data: { name, description: null, price: 9.5, category: 'principal', available: true, ingredients: [] }
+  })
+  if (!response.ok()) throw new Error(`No se pudo crear el plato: ${response.status()}`)
+  return (await response.json()).id
+}
