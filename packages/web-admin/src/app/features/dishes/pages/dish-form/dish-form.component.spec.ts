@@ -139,4 +139,49 @@ describe('DishFormComponent', () => {
       expect(cancel!.getAttribute('href')).toBe('/restaurants/rest-1/dishes')
     })
   })
+
+  describe('añadir ingrediente', () => {
+    function select(el: HTMLElement, fixture: ComponentFixture<DishFormComponent>, id: string, qty = '2') {
+      const sel = el.querySelector<HTMLSelectElement>('#new-ingredient')!
+      sel.value = id
+      sel.dispatchEvent(new Event('change'))
+      const q = el.querySelector<HTMLInputElement>('#new-ingredient-qty')!
+      q.value = qty
+      q.dispatchEvent(new Event('input'))
+      fixture.detectChanges()
+    }
+
+    it('el botón es un button type=button con aria-label y añade el ingrediente', async () => {
+      const { el, fixture, component } = await render()
+      const btn = el.querySelector<HTMLButtonElement>('button[aria-label="Añadir ingrediente"]')
+      expect(btn).toBeTruthy()
+      expect(btn!.type).toBe('button')
+      select(el, fixture, 'ing-1')
+      btn!.click()
+      expect(component.form.ingredients).toEqual([{ ingredientId: 'ing-1', quantity: 2 }])
+    })
+
+    it('Enter en cantidad añade el ingrediente y no envía el formulario', async () => {
+      const { el, fixture, component } = await render()
+      const submit = vi.spyOn(component, 'onSubmit').mockResolvedValue()
+      select(el, fixture, 'ing-2', '3')
+      const q = el.querySelector<HTMLInputElement>('#new-ingredient-qty')!
+      const ev = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+      q.dispatchEvent(ev)
+      expect(component.form.ingredients).toEqual([{ ingredientId: 'ing-2', quantity: 3 }])
+      expect(ev.defaultPrevented).toBe(true)
+      expect(submit).not.toHaveBeenCalled()
+    })
+
+    it('no duplica ingredientes', async () => {
+      const { el, fixture, component } = await render()
+      const btn = el.querySelector<HTMLButtonElement>('button[aria-label="Añadir ingrediente"]')!
+      select(el, fixture, 'ing-1')
+      btn.click()
+      fixture.detectChanges()
+      select(el, fixture, 'ing-1')
+      btn.click()
+      expect(component.form.ingredients.length).toBe(1)
+    })
+  })
 })
