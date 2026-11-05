@@ -57,4 +57,25 @@ describe('DishFormComponent', () => {
     expect(component).toBeTruthy()
     expect(el.textContent).toContain('Nuevo plato')
   })
+
+  describe('etiquetas', () => {
+    const labels = ['Nombre del plato', 'Precio', 'Categoría', 'Disponible', 'Descripción', 'Ingrediente', 'Cantidad']
+
+    it.each(labels)('el control "%s" se resuelve por su label', async (text) => {
+      const { el } = await render()
+      const label = Array.from(el.querySelectorAll('label')).find(l => l.textContent?.includes(text))
+      expect(label, `label ${text}`).toBeTruthy()
+      const control = el.querySelector(`#${label!.getAttribute('for')}`)
+      expect(control).toBeTruthy()
+      expect(['INPUT', 'SELECT', 'TEXTAREA']).toContain(control!.tagName)
+    })
+
+    it('cada control tiene un id único', async () => {
+      const { el } = await render()
+      const controls = Array.from(el.querySelectorAll('input, select, textarea'))
+      const ids = controls.map(c => c.id)
+      expect(ids.every(Boolean)).toBe(true)
+      expect(new Set(ids).size).toBe(ids.length)
+    })
+  })
 })
