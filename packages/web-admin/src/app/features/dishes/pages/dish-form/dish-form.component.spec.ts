@@ -99,4 +99,19 @@ describe('DishFormComponent', () => {
       expect(legend?.textContent?.trim()).toBe('Ingredientes del plato')
     })
   })
+
+  describe('enlace volver e iconos', () => {
+    it('el enlace volver tiene nombre accesible', async () => {
+      const { el } = await render()
+      const link = el.querySelector('a.back-link')
+      expect(link?.getAttribute('aria-label')).toBe('Volver a la lista de platos')
+    })
+
+    it('los iconos decorativos están ocultos a tecnologías de apoyo', async () => {
+      const { el } = await render()
+      const icons = Array.from(el.querySelectorAll('lucide-icon'))
+      expect(icons.length).toBeGreaterThan(0)
+      icons.forEach(i => expect(i.getAttribute('aria-hidden')).toBe('true'))
+    })
+  })
 })
