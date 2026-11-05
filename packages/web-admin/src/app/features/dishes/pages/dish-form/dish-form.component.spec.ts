@@ -187,13 +187,11 @@ describe('DishFormComponent', () => {
 
   describe('quitar ingrediente', () => {
     async function withIngredients() {
-      const r = await render()
-      r.component.form.ingredients = [
-        { ingredientId: 'ing-1', quantity: 2 },
-        { ingredientId: 'ing-2', quantity: 1 }
-      ]
-      r.fixture.detectChanges()
-      return r
+      const dish = {
+        name: 'X', description: null, price: 5, category: 'postre', available: true,
+        ingredients: [{ ingredientId: 'ing-1', quantity: 2 }, { ingredientId: 'ing-2', quantity: 1 }]
+      }
+      return render({ dishId: 'd-1', dish })
     }
 
     it('los chips forman una lista semántica con botón "Quitar X"', async () => {
