@@ -12,7 +12,7 @@
     <div class="alert-error">{{ error() }}</div>
   }
 
-  <div class="card form-card">
+  <form class="card form-card" (ngSubmit)="onSubmit()" novalidate>
     <div class="form-grid">
       <div class="form-group">
         <label class="field-label" for="dish-name">Nombre del plato</label>
@@ -80,14 +80,14 @@
     </fieldset>
 
     <div class="form-actions">
-      <div class="btn btn-secondary" [routerLink]="listUrl">Cancelar</div>
-      <div class="btn btn-primary" (click)="onSubmit()">
+      <a class="btn btn-secondary" [routerLink]="listUrl">Cancelar</a>
+      <button type="submit" class="btn btn-primary">
         @if (loading()) {
           Guardando...
         } @else {
           Guardar
         }
-      </div>
+      </button>
     </div>
-  </div>
+  </form>
 </div>

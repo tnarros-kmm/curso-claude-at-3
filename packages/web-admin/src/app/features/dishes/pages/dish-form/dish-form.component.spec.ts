@@ -114,4 +114,29 @@ describe('DishFormComponent', () => {
       icons.forEach(i => expect(i.getAttribute('aria-hidden')).toBe('true'))
     })
   })
+
+  describe('acciones nativas', () => {
+    it('hay un form con novalidate y Guardar es button submit', async () => {
+      const { el } = await render()
+      const form = el.querySelector('form')
+      expect(form).toBeTruthy()
+      expect(form!.hasAttribute('novalidate')).toBe(true)
+      const save = form!.querySelector('button[type=submit]')
+      expect(save?.textContent?.trim()).toBe('Guardar')
+    })
+
+    it('el submit del form llama a onSubmit', async () => {
+      const { el, component } = await render()
+      const spy = vi.spyOn(component, 'onSubmit').mockResolvedValue()
+      el.querySelector('form')!.dispatchEvent(new Event('submit'))
+      expect(spy).toHaveBeenCalledTimes(1)
+    })
+
+    it('Cancelar es un enlace a la lista', async () => {
+      const { el } = await render()
+      const cancel = Array.from(el.querySelectorAll('a')).find(a => a.textContent?.trim() === 'Cancelar')
+      expect(cancel).toBeTruthy()
+      expect(cancel!.getAttribute('href')).toBe('/restaurants/rest-1/dishes')
+    })
+  })
 })
