@@ -7,3 +7,6 @@ data/*.db
 .env
 .env.*
 .DS_Store
+
+test-results/
+playwright-report/

@@ -1,0 +1,507 @@
+import { importProvidersFrom, provideZonelessChangeDetection, signal } from '@angular/core'
+import { LucideAngularModule, ChevronLeft, Plus, Trash2 } from 'lucide-angular'
+import { ComponentFixture, TestBed } from '@angular/core/testing'
+import { ActivatedRoute, Router, provideRouter } from '@angular/router'
+import { of, throwError } from 'rxjs'
+import { vi } from 'vitest'
+import { DishFormComponent } from './dish-form.component'
+import { DishStore } from '../../store/dish.store'
+import { DishService } from '../../services/dish.service'
+import { IngredientStore } from '../../../ingredients/store/ingredient.store'
+
+export const INGREDIENTS = [
+  { id: 'ing-1', name: 'Tomate', unit: 'kg' },
+  { id: 'ing-2', name: 'Queso', unit: 'g' }
+]
+
+interface RenderOptions {
+  dishId?: string
+  dish?: unknown
+  loadError?: boolean
+}
+
+async function render(options: RenderOptions = {}) {
+  const store = { create: vi.fn().mockResolvedValue(undefined), update: vi.fn().mockResolvedValue(undefined) }
+  const service = {
+    getById: vi.fn().mockReturnValue(options.loadError ? throwError(() => new Error('x')) : of(options.dish ?? null))
+  }
+  const ingredientStore = { ingredients: signal(INGREDIENTS), loadByRestaurant: vi.fn() }
+  const route = {
+    parent: { snapshot: { params: { restaurantId: 'rest-1' } } },
+    snapshot: { paramMap: { get: (k: string) => (k === 'id' ? (options.dishId ?? null) : null) } }
+  }
+
+  TestBed.configureTestingModule({
+    imports: [DishFormComponent],
+    providers: [
+      provideZonelessChangeDetection(),
+      provideRouter([]),
+      importProvidersFrom(LucideAngularModule.pick({ ChevronLeft, Plus, Trash2 })),
+      { provide: DishStore, useValue: store },
+      { provide: DishService, useValue: service },
+      { provide: IngredientStore, useValue: ingredientStore },
+      { provide: ActivatedRoute, useValue: route }
+    ]
+  })
+
+  const fixture: ComponentFixture<DishFormComponent> = TestBed.createComponent(DishFormComponent)
+  const router = TestBed.inject(Router)
+  const navigate = vi.spyOn(router, 'navigate').mockResolvedValue(true)
+  fixture.detectChanges()
+  await fixture.whenStable()
+  fixture.detectChanges()
+  const el: HTMLElement = fixture.nativeElement
+  return { fixture, component: fixture.componentInstance, el, store, service, navigate }
+}
+
+describe('DishFormComponent', () => {
+  it('se crea el componente y muestra "Nuevo plato"', async () => {
+    const { component, el } = await render()
+    expect(component).toBeTruthy()
+    expect(el.textContent).toContain('Nuevo plato')
+  })
+
+  describe('etiquetas', () => {
+    const labels = ['Nombre del plato', 'Precio', 'Categoría', 'Disponible', 'Descripción', 'Ingrediente', 'Cantidad']
+
+    it.each(labels)('el control "%s" se resuelve por su label', async (text) => {
+      const { el } = await render()
+      const label = Array.from(el.querySelectorAll('label')).find(l => l.textContent?.includes(text))
+      expect(label, `label ${text}`).toBeTruthy()
+      const control = el.querySelector(`#${label!.getAttribute('for')}`)
+      expect(control).toBeTruthy()
+      expect(['INPUT', 'SELECT', 'TEXTAREA']).toContain(control!.tagName)
+    })
+
+    it('cada control tiene un id único', async () => {
+      const { el } = await render()
+      const controls = Array.from(el.querySelectorAll('input, select, textarea'))
+      const ids = controls.map(c => c.id)
+      expect(ids.every(Boolean)).toBe(true)
+      expect(new Set(ids).size).toBe(ids.length)
+    })
+  })
+
+  describe('encabezados y agrupación', () => {
+    it('hay un único h1 "Nuevo plato"', async () => {
+      const { el } = await render()
+      const h1 = el.querySelectorAll('h1')
+      expect(h1.length).toBe(1)
+      expect(h1[0].textContent?.trim()).toBe('Nuevo plato')
+    })
+
+    it('en edición el h1 es "Editar plato"', async () => {
+      const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
+      const { el } = await render({ dishId: 'd-1', dish })
+      expect(el.querySelector('h1')?.textContent?.trim()).toBe('Editar plato')
+    })
+
+    it('el fieldset de ingredientes tiene legend "Ingredientes del plato"', async () => {
+      const { el } = await render()
+      const legend = el.querySelector('fieldset > legend')
+      expect(legend?.textContent?.trim()).toBe('Ingredientes del plato')
+    })
+  })
+
+  describe('enlace volver e iconos', () => {
+    it('el enlace volver tiene nombre accesible', async () => {
+      const { el } = await render()
+      const link = el.querySelector('a.back-link')
+      expect(link?.getAttribute('aria-label')).toBe('Volver a la lista de platos')
+    })
+
+    it('los iconos decorativos están ocultos a tecnologías de apoyo', async () => {
+      const { el } = await render()
+      const icons = Array.from(el.querySelectorAll('lucide-icon'))
+      expect(icons.length).toBeGreaterThan(0)
+      icons.forEach(i => expect(i.getAttribute('aria-hidden')).toBe('true'))
+    })
+  })
+
+  describe('acciones nativas', () => {
+    it('hay un form con novalidate y Guardar es button submit', async () => {
+      const { el } = await render()
+      const form = el.querySelector('form')
+      expect(form).toBeTruthy()
+      expect(form!.hasAttribute('novalidate')).toBe(true)
+      const save = form!.querySelector('button[type=submit]')
+      expect(save?.textContent?.trim()).toBe('Guardar')
+    })
+
+    it('el submit del form llama a onSubmit', async () => {
+      const { el, component } = await render()
+      const spy = vi.spyOn(component, 'onSubmit').mockResolvedValue()
+      el.querySelector('form')!.dispatchEvent(new Event('submit'))
+      expect(spy).toHaveBeenCalledTimes(1)
+    })
+
+    it('Cancelar es un enlace a la lista', async () => {
+      const { el } = await render()
+      const cancel = Array.from(el.querySelectorAll('a')).find(a => a.textContent?.trim() === 'Cancelar')
+      expect(cancel).toBeTruthy()
+      expect(cancel!.getAttribute('href')).toBe('/restaurants/rest-1/dishes')
+    })
+  })
+
+  describe('añadir ingrediente', () => {
+    function select(el: HTMLElement, fixture: ComponentFixture<DishFormComponent>, id: string, qty = '2') {
+      const sel = el.querySelector<HTMLSelectElement>('#new-ingredient')!
+      sel.value = id
+      sel.dispatchEvent(new Event('change'))
+      const q = el.querySelector<HTMLInputElement>('#new-ingredient-qty')!
+      q.value = qty
+      q.dispatchEvent(new Event('input'))
+      fixture.detectChanges()
+    }
+
+    it('el botón es un button type=button con aria-label y añade el ingrediente', async () => {
+      const { el, fixture, component } = await render()
+      const btn = el.querySelector<HTMLButtonElement>('button[aria-label="Añadir ingrediente"]')
+      expect(btn).toBeTruthy()
+      expect(btn!.type).toBe('button')
+      select(el, fixture, 'ing-1')
+      btn!.click()
+      expect(component.form.ingredients).toEqual([{ ingredientId: 'ing-1', quantity: 2 }])
+    })
+
+    it('Enter en cantidad añade el ingrediente y no envía el formulario', async () => {
+      const { el, fixture, component } = await render()
+      const submit = vi.spyOn(component, 'onSubmit').mockResolvedValue()
+      select(el, fixture, 'ing-2', '3')
+      const q = el.querySelector<HTMLInputElement>('#new-ingredient-qty')!
+      const ev = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true })
+      q.dispatchEvent(ev)
+      expect(component.form.ingredients).toEqual([{ ingredientId: 'ing-2', quantity: 3 }])
+      expect(ev.defaultPrevented).toBe(true)
+      expect(submit).not.toHaveBeenCalled()
+    })
+
+    it('no duplica ingredientes', async () => {
+      const { el, fixture, component } = await render()
+      const btn = el.querySelector<HTMLButtonElement>('button[aria-label="Añadir ingrediente"]')!
+      select(el, fixture, 'ing-1')
+      btn.click()
+      fixture.detectChanges()
+      select(el, fixture, 'ing-1')
+      btn.click()
+      expect(component.form.ingredients.length).toBe(1)
+    })
+  })
+
+  describe('quitar ingrediente', () => {
+    async function withIngredients() {
+      const dish = {
+        name: 'X', description: null, price: 5, category: 'postre', available: true,
+        ingredients: [{ ingredientId: 'ing-1', quantity: 2 }, { ingredientId: 'ing-2', quantity: 1 }]
+      }
+      return render({ dishId: 'd-1', dish })
+    }
+
+    it('los chips forman una lista semántica con botón "Quitar X"', async () => {
+      const { el } = await withIngredients()
+      expect(el.querySelectorAll('ul li').length).toBe(2)
+      const btns = Array.from(el.querySelectorAll<HTMLButtonElement>('ul li button'))
+      expect(btns.map(b => b.getAttribute('aria-label'))).toEqual(['Quitar Tomate (kg)', 'Quitar Queso (g)'])
+      btns.forEach(b => expect(b.type).toBe('button'))
+    })
+
+    it('al pulsar el botón se elimina el ingrediente', async () => {
+      const { el, fixture, component } = await withIngredients()
+      el.querySelector<HTMLButtonElement>('ul li button')!.click()
+      fixture.detectChanges()
+      expect(component.form.ingredients.map(i => i.ingredientId)).toEqual(['ing-2'])
+      expect(el.querySelectorAll('ul li').length).toBe(1)
+    })
+  })
+
+  describe('onSubmit con validación', () => {
+    it('un envío vacío no llama al store ni navega', async () => {
+      const { component, store, navigate } = await render()
+      await component.onSubmit()
+      expect(store.create).not.toHaveBeenCalled()
+      expect(navigate).not.toHaveBeenCalled()
+      expect(component.fieldErrors()).toEqual({
+        name: 'El nombre es obligatorio',
+        price: 'El precio debe ser mayor que 0'
+      })
+    })
+
+    it('con datos válidos crea y navega a la lista', async () => {
+      const { component, store, navigate } = await render()
+      component.form.name = 'Paella'
+      component.form.price = 12
+      await component.onSubmit()
+      expect(store.create).toHaveBeenCalledWith('rest-1', component.form)
+      expect(navigate).toHaveBeenCalledWith(['/restaurants', 'rest-1', 'dishes'])
+      expect(component.fieldErrors()).toEqual({})
+    })
+
+    it('los errores se limpian al corregir y reenviar', async () => {
+      const { component } = await render()
+      await component.onSubmit()
+      expect(Object.keys(component.fieldErrors()).length).toBe(2)
+      component.form.name = 'Paella'
+      component.form.price = 12
+      await component.onSubmit()
+      expect(component.fieldErrors()).toEqual({})
+    })
+  })
+
+  describe('errores por campo', () => {
+    it('nombre y precio son obligatorios y lo anuncian', async () => {
+      const { el } = await render()
+      for (const id of ['dish-name', 'dish-price']) {
+        expect(el.querySelector(`#${id}`)!.getAttribute('aria-required')).toBe('true')
+        expect(el.querySelector(`label[for=${id}]`)!.textContent).toContain('(obligatorio)')
+      }
+    })
+
+    it('sin error no hay aria-invalid', async () => {
+      const { el } = await render()
+      expect(el.querySelector('[aria-invalid]')).toBeNull()
+      expect(el.querySelector('.field-error')).toBeNull()
+    })
+
+    it('tras un envío incompleto marca aria-invalid y enlaza el mensaje', async () => {
+      const { el, fixture, component } = await render()
+      await component.onSubmit()
+      fixture.detectChanges()
+      const cases: [string, string, string][] = [
+        ['dish-name', 'name-error', 'El nombre es obligatorio'],
+        ['dish-price', 'price-error', 'El precio debe ser mayor que 0']
+      ]
+      for (const [id, errId, msg] of cases) {
+        const input = el.querySelector(`#${id}`)!
+        expect(input.getAttribute('aria-invalid')).toBe('true')
+        expect(input.getAttribute('aria-describedby')).toBe(errId)
+        expect(el.querySelector(`#${errId}`)!.textContent).toContain(msg)
+      }
+    })
+
+    it('solo marca el campo con error', async () => {
+      const { el, fixture, component } = await render()
+      component.form.name = 'Paella'
+      await component.onSubmit()
+      fixture.detectChanges()
+      expect(el.querySelector('#dish-name')!.hasAttribute('aria-invalid')).toBe(false)
+      expect(el.querySelector('#dish-price')!.getAttribute('aria-invalid')).toBe('true')
+    })
+  })
+
+  describe('resumen de errores y foco', () => {
+    async function submitInvalid(opts: { name?: string; price?: number } = {}) {
+      const r = await render()
+      if (opts.name !== undefined) r.component.form.name = opts.name
+      if (opts.price !== undefined) r.component.form.price = opts.price
+      await r.component.onSubmit()
+      r.fixture.detectChanges()
+      await r.fixture.whenStable()
+      return r
+    }
+
+    it('el foco va al nombre cuando falta el nombre', async () => {
+      const { el } = await submitInvalid({ price: 5 })
+      expect(document.activeElement).toBe(el.querySelector('#dish-name'))
+    })
+
+    it('el foco va al precio si solo falta el precio', async () => {
+      const { el } = await submitInvalid({ name: 'Paella' })
+      expect(document.activeElement).toBe(el.querySelector('#dish-price'))
+    })
+
+    it('el resumen role=alert lista los errores con enlaces a los campos', async () => {
+      const { el } = await submitInvalid()
+      const summary = el.querySelector('[role=alert].error-summary')!
+      expect(summary).toBeTruthy()
+      const links = Array.from(summary.querySelectorAll('a'))
+      expect(links.map(l => l.getAttribute('href'))).toEqual(['#dish-name', '#dish-price'])
+      expect(links[0].textContent).toContain('El nombre es obligatorio')
+    })
+
+    it('el enlace del resumen enfoca el campo', async () => {
+      const { el, fixture } = await submitInvalid()
+      const link = el.querySelectorAll<HTMLAnchorElement>('.error-summary a')[1]
+      link.click()
+      fixture.detectChanges()
+      expect(document.activeElement).toBe(el.querySelector('#dish-price'))
+    })
+
+    it('sin errores no hay resumen', async () => {
+      const { el } = await render()
+      expect(el.querySelector('.error-summary')).toBeNull()
+    })
+
+    it('el error de API se muestra con role=alert', async () => {
+      const { el, fixture, component, store } = await render()
+      store.create.mockRejectedValue({ error: { message: 'Fallo API' } })
+      component.form.name = 'Paella'
+      component.form.price = 5
+      await component.onSubmit()
+      fixture.detectChanges()
+      const alert = el.querySelector('.alert-error')!
+      expect(alert.getAttribute('role')).toBe('alert')
+      expect(alert.textContent).toContain('Fallo API')
+    })
+  })
+
+  describe('anuncios y foco en ingredientes', () => {
+    const dish = {
+      name: 'X', description: null, price: 5, category: 'postre', available: true,
+      ingredients: [{ ingredientId: 'ing-1', quantity: 2 }, { ingredientId: 'ing-2', quantity: 1 }]
+    }
+
+    it('existe una región aria-live polite vacía al inicio', async () => {
+      const { el } = await render()
+      const live = el.querySelector('[aria-live=polite]')!
+      expect(live).toBeTruthy()
+      expect(live.textContent?.trim()).toBe('')
+    })
+
+    it('al añadir anuncia y devuelve el foco al select de ingrediente', async () => {
+      const { el, fixture } = await render()
+      const sel = el.querySelector<HTMLSelectElement>('#new-ingredient')!
+      sel.value = 'ing-1'
+      sel.dispatchEvent(new Event('change'))
+      el.querySelector<HTMLButtonElement>('button[aria-label="Añadir ingrediente"]')!.click()
+      fixture.detectChanges()
+      await fixture.whenStable()
+      expect(el.querySelector('[aria-live=polite]')!.textContent).toContain('Ingrediente Tomate añadido')
+      expect(document.activeElement).toBe(sel)
+    })
+
+    it('al quitar anuncia y pasa el foco al botón del siguiente chip', async () => {
+      const { el, fixture } = await render({ dishId: 'd-1', dish })
+      el.querySelector<HTMLButtonElement>('ul li button')!.click()
+      fixture.detectChanges()
+      await fixture.whenStable()
+      expect(el.querySelector('[aria-live=polite]')!.textContent).toContain('Ingrediente Tomate eliminado')
+      expect(document.activeElement).toBe(el.querySelector('ul li button'))
+      expect(document.activeElement!.getAttribute('aria-label')).toBe('Quitar Queso (g)')
+    })
+
+    it('al quitar el último chip el foco pasa al select', async () => {
+      const { el, fixture } = await render({ dishId: 'd-1', dish: { ...dish, ingredients: [dish.ingredients[0]] } })
+      el.querySelector<HTMLButtonElement>('ul li button')!.click()
+      fixture.detectChanges()
+      await fixture.whenStable()
+      expect(document.activeElement).toBe(el.querySelector('#new-ingredient'))
+    })
+  })
+
+  describe('estado de guardado', () => {
+    it('con loading el botón está deshabilitado, aria-busy y hay un status', async () => {
+      const { el, fixture, component } = await render()
+      component.loading.set(true)
+      fixture.detectChanges()
+      const btn = el.querySelector<HTMLButtonElement>('button[type=submit]')!
+      expect(btn.disabled).toBe(true)
+      expect(btn.getAttribute('aria-busy')).toBe('true')
+      expect(el.querySelector('[role=status]')!.textContent).toContain('Guardando...')
+    })
+
+    it('sin loading el botón está habilitado y el status vacío', async () => {
+      const { el } = await render()
+      const btn = el.querySelector<HTMLButtonElement>('button[type=submit]')!
+      expect(btn.disabled).toBe(false)
+      expect(btn.hasAttribute('aria-busy')).toBe(false)
+      expect(el.querySelector('[role=status]')!.textContent?.trim()).toBe('')
+    })
+
+    it('no admite doble envío mientras guarda', async () => {
+      const { component, store } = await render()
+      let resolve!: () => void
+      store.create.mockReturnValue(new Promise<void>(r => (resolve = r)))
+      component.form.name = 'Paella'
+      component.form.price = 5
+      const first = component.onSubmit()
+      await component.onSubmit()
+      resolve()
+      await first
+      expect(store.create).toHaveBeenCalledTimes(1)
+    })
+
+    it('se vuelve a habilitar tras un error de API', async () => {
+      const { el, fixture, component, store } = await render()
+      store.create.mockRejectedValue({ error: { message: 'Fallo' } })
+      component.form.name = 'Paella'
+      component.form.price = 5
+      await component.onSubmit()
+      fixture.detectChanges()
+      expect(el.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(false)
+    })
+
+    it('en edición el botón no queda atascado tras cargar el plato', async () => {
+      const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
+      const { el } = await render({ dishId: 'd-1', dish })
+      expect(el.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(false)
+    })
+  })
+
+  describe('ramas adicionales', () => {
+    it('muestra un error accesible si no se puede cargar el plato', async () => {
+      const { el } = await render({ dishId: 'd-1', loadError: true })
+      expect(el.querySelector('.alert-error')!.textContent).toContain('No se pudo cargar el plato.')
+    })
+
+    it('en edición guarda con update', async () => {
+      const dish = { name: 'X', description: null, price: 5, category: 'postre', available: true, ingredients: [] }
+      const { component, store, navigate } = await render({ dishId: 'd-1', dish })
+      await component.onSubmit()
+      expect(store.update).toHaveBeenCalledWith('rest-1', 'd-1', component.form)
+      expect(store.create).not.toHaveBeenCalled()
+      expect(navigate).toHaveBeenCalled()
+    })
+
+    it('usa un mensaje por defecto si la API no devuelve mensaje', async () => {
+      const { component, store } = await render()
+      store.create.mockRejectedValue({})
+      component.form.name = 'Paella'
+      component.form.price = 5
+      await component.onSubmit()
+      expect(component.error()).toBe('Error al guardar el plato.')
+    })
+
+    it('no añade ingrediente sin selección o con cantidad no positiva', async () => {
+      const { component } = await render()
+      component.addIngredient()
+      component.newIngredientId = 'ing-1'
+      component.newIngredientQty = 0
+      component.addIngredient()
+      expect(component.form.ingredients).toEqual([])
+    })
+
+    it('quitar un ingrediente inexistente no rompe y el foco va al select', async () => {
+      const { component } = await render()
+      component.removeIngredient('nope')
+      expect(component.liveMessage()).toBe('Ingrediente nope eliminado')
+    })
+
+    it('getCategoryLabel y getIngredientName tienen valor de respaldo', async () => {
+      const { component } = await render()
+      expect(component.getCategoryLabel('otra')).toBe('otra')
+      expect(component.getCategoryLabel('postre')).toBe('Postre')
+      expect(component.getIngredientName('desconocido')).toBe('desconocido')
+    })
+
+    it('sin restaurantId en la ruta no carga ingredientes', async () => {
+      TestBed.resetTestingModule()
+      const loadByRestaurant = vi.fn()
+      TestBed.configureTestingModule({
+        imports: [DishFormComponent],
+        providers: [
+          provideZonelessChangeDetection(),
+          provideRouter([]),
+          importProvidersFrom(LucideAngularModule.pick({ ChevronLeft, Plus, Trash2 })),
+          { provide: DishStore, useValue: {} },
+          { provide: DishService, useValue: {} },
+          { provide: IngredientStore, useValue: { ingredients: signal([]), loadByRestaurant } },
+          { provide: ActivatedRoute, useValue: { parent: null, snapshot: { paramMap: { get: () => null } } } }
+        ]
+      })
+      const fixture = TestBed.createComponent(DishFormComponent)
+      fixture.detectChanges()
+      expect(loadByRestaurant).not.toHaveBeenCalled()
+      expect(fixture.componentInstance.restaurantId).toBe('')
+    })
+  })
+})

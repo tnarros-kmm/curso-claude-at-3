@@ -55,7 +55,6 @@ button {
   font-family: inherit;
   cursor: pointer;
   border: none;
-  outline: none;
   font-size: inherit;
 }
 
@@ -133,9 +132,16 @@ input, select, textarea {
 }
 
 .form-control:focus {
-  outline: none;
   border-color: var(--border-focus);
   box-shadow: 0 0 0 3px var(--green-glow);
+}
+
+:focus-visible,
+a:focus-visible,
+button:focus-visible,
+.form-control:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
 }
 
 .form-control::placeholder {
