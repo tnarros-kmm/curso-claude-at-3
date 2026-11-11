@@ -11,6 +11,8 @@
     "dev:empleados": "npm run start -w @resttek/web-empleados",
     "dev:clientes": "npm run start -w @resttek/web-clientes",
     "test": "npm run test -w @resttek/api",
-    "seed": "npm run seed -w @resttek/api"
+    "seed": "npm run seed -w @resttek/api",
+    "test:admin": "npm run test:coverage -w @resttek/web-admin",
+    "e2e:admin": "npm run e2e -w @resttek/web-admin"
   }
 }
