@@ -1,0 +1,133 @@
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tables-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.table-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.table-card.status-libre { border-left-color: var(--green-light); }
+.table-card.status-ocupada { border-left-color: var(--red); }
+.table-card.status-reservada { border-left-color: var(--yellow); }
+
+.table-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.table-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.table-number {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.table-capacity,
+.table-description,
+.no-orders {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.table-status-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.table-status-select select {
+  flex: 1;
+  padding: 6px 10px;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  text-transform: capitalize;
+}
+
+.table-orders {
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
+.table-orders h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+
+.order-block {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.order-id {
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.item-name {
+  font-size: 13px;
+  color: var(--text-primary);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 20px;
+  text-transform: capitalize;
+}
+
+.badge-pendiente, .badge-reservada { background: var(--yellow-glow); color: var(--yellow); }
+.badge-preparando { background: var(--orange-glow); color: var(--orange); }
+.badge-listo, .badge-libre { background: var(--green-glow); color: var(--green-light); }
+.badge-ocupada { background: var(--red-glow); color: var(--red); }
+.badge-entregado { background: rgba(139, 146, 168, 0.1); color: var(--text-muted); }

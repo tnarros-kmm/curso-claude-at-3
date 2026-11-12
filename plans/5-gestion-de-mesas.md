@@ -93,10 +93,10 @@ Que cada restaurante tenga sus mesas modeladas (número, descripción, capacidad
 - [x] 20. Crear `tables.routes.ts`, registrarlo en `app.routes.ts` y añadir enlace en el dashboard del restaurante; verificar con `npm run build -w @resttek/web-admin` (5 min)
 
 **web-empleados**
-- [ ] 21. Crear `features/tables` (model, service con `getAll` y `updateStatus`, store con polling) (10 min)
-- [ ] 22. Crear página `mesas` con tarjetas por mesa coloreadas por estado y selector de estado (10 min)
-- [ ] 23. Mostrar en cada mesa ocupada sus pedidos activos usando `OrderStore` filtrado por `tableId` (10 min)
-- [ ] 24. Añadir ruta `mesas` en `app.routes.ts` y entrada en `shell.component.html`; `npm run build -w @resttek/web-empleados` (5 min)
+- [x] 21. Crear `features/tables` (model, service con `getAll` y `updateStatus`, store con polling) (10 min)
+- [x] 22. Crear página `mesas` con tarjetas por mesa coloreadas por estado y selector de estado (10 min)
+- [x] 23. Mostrar en cada mesa ocupada sus pedidos activos usando `OrderStore` filtrado por `tableId` (10 min)
+- [x] 24. Añadir ruta `mesas` en `app.routes.ts` y entrada en `shell.component.html`; `npm run build -w @resttek/web-empleados` (5 min)
 
 **web-clientes**
 - [ ] 25. Crear `core/models/table.model.ts` y `core/services/table.service.ts` (`getAvailable`, `occupy`) (5 min)
