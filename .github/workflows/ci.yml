@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test-lint:
+    name: Build, test y lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Linters: ningún paquete define un script "lint" todavía; en cuanto
+      # alguno lo añada, este paso lo ejecutará automáticamente.
+      - name: Lint
+        run: npm run lint --workspaces --if-present
+
+      - name: Build API (type-check con tsc)
+        run: npx tsc --noEmit -p packages/api/tsconfig.json
+
+      - name: Build web-admin
+        run: npm run build -w @resttek/web-admin
+
+      - name: Build web-empleados
+        run: npm run build -w @resttek/web-empleados
+
+      - name: Build web-clientes
+        run: npm run build -w @resttek/web-clientes
+
+      - name: Tests API
+        run: npm test
+
+      - name: Tests web-admin
+        run: npm run test -w @resttek/web-admin
+
+  claude-docs-review:
+    name: Claude - coherencia con docs y OpenAPI
+    needs: build-test-lint
+    if: github.event_name == 'pull_request' && github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claude revisa coherencia con la documentación
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            @claude: revisa que los cambios de esta PR siguen en sintonía con la
+            documentación del proyecto.
+
+            1. Obtén el diff de la PR (`gh pr diff ${{ github.event.pull_request.number }}`).
+            2. Lee la documentación de la carpeta `docs/` (arquitectura y dominio) y
+               cualquier documento OpenAPI del repositorio (busca `openapi*.yml`,
+               `openapi*.yaml`, `openapi*.json` y especificaciones escritas en JS/TS,
+               p. ej. `**/docs/openapi*`).
+            3. Comprueba si los cambios contradicen o dejan desactualizado algo de
+               esa documentación: arquitectura, modelo de datos, glosario, endpoints,
+               parámetros, esquemas, códigos de respuesta, roles, etc.
+            4. Si algo no cuadra, publica UN comentario en la PR con
+               `gh pr comment ${{ github.event.pull_request.number }} --body "..."`,
+               indicando para cada discrepancia el archivo/líneas del código, el
+               documento afectado y qué habría que actualizar. Si hay endpoints
+               nuevos o modificados y no existe documentación OpenAPI, menciónalo.
+            5. Si todo está en sintonía, publica un comentario breve confirmándolo.
+
+            No modifiques archivos ni hagas commits: solo comenta.
+          claude_args: |
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Read,Glob,Grep"
