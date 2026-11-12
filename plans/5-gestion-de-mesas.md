@@ -99,11 +99,11 @@ Que cada restaurante tenga sus mesas modeladas (número, descripción, capacidad
 - [ ] 24. Añadir ruta `mesas` en `app.routes.ts` y entrada en `shell.component.html`; `npm run build -w @resttek/web-empleados` (5 min)
 
 **web-clientes**
-- [ ] 25. Crear `core/models/table.model.ts` y `core/services/table.service.ts` (`getAvailable`, `occupy`) (5 min)
-- [ ] 26. Añadir `tableId`/`restaurantId` seleccionados a `CartStore` (5 min)
-- [ ] 27. Crear `features/tables/table-selection.component.ts`: input nº de personas, lista de mesas disponibles, botón "Continuar" que ocupa la mesa y navega a `/restaurants/:id`; manejo de error si la mesa deja de estar libre (10 min)
-- [ ] 28. Añadir ruta `restaurants/:id/table`, cambiar el enlace de `restaurant-list.component.ts` y redirigir a la selección si se entra a la carta sin mesa (5 min)
-- [ ] 29. Enviar `tableId` del `CartStore` en `order.service.ts`/`cart.component.ts`; `npm run build -w @resttek/web-clientes` (5 min)
+- [x] 25. Crear `core/models/table.model.ts` y `core/services/table.service.ts` (`getAvailable`, `occupy`) (5 min)
+- [x] 26. Añadir `tableId`/`restaurantId` seleccionados a `CartStore` (5 min)
+- [x] 27. Crear `features/tables/table-selection.component.ts`: input nº de personas, lista de mesas disponibles, botón "Continuar" que ocupa la mesa y navega a `/restaurants/:id`; manejo de error si la mesa deja de estar libre (10 min)
+- [x] 28. Añadir ruta `restaurants/:id/table`, cambiar el enlace de `restaurant-list.component.ts` y redirigir a la selección si se entra a la carta sin mesa (5 min)
+- [x] 29. Enviar `tableId` del `CartStore` en `order.service.ts`/`cart.component.ts`; `npm run build -w @resttek/web-clientes` (5 min)
 
 **Cierre**
 - [ ] 30. Ejecutar `npm test` y verificar cobertura ≥ 80 % (5 min)
