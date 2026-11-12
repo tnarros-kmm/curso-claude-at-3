@@ -198,6 +198,12 @@ export class CartComponent {
     const restaurantId = this.cartStore.restaurantId()
     if (!restaurantId || this.cartStore.items().length === 0) return
 
+    const table = this.cartStore.table()
+    if (!table || table.restaurantId !== restaurantId) {
+      this.router.navigate(['/restaurants', restaurantId, 'table'])
+      return
+    }
+
     this.loading.set(true)
     this.error.set(null)
 
@@ -207,7 +213,7 @@ export class CartComponent {
       notes: item.notes || null
     }))
 
-    this.orderService.createOrder(restaurantId, items).subscribe({
+    this.orderService.createOrder(restaurantId, this.cartStore.table()?.id ?? null, items).subscribe({
       next: (order) => {
         this.cartStore.clear()
         this.router.navigate(['/orders', order.id])
