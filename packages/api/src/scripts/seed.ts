@@ -92,9 +92,9 @@ const seed = async () => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [dish1Id, 'Pizza Margarita', 'Pizza clásica con tomate, mozzarella y albahaca', 12.50, 'principal', 'rest-1', 1, new Date().toISOString(), new Date().toISOString()])
 
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish1Id, ingredientsRest1[0].id, 0.3])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish1Id, ingredientsRest1[1].id, 0.4])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish1Id, ingredientsRest1[4].id, 0.05])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish1Id, ingredientsRest1[0]!.id, 0.3])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish1Id, ingredientsRest1[1]!.id, 0.4])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish1Id, ingredientsRest1[4]!.id, 0.05])
 
         const dish2Id = randomUUID()
         await dbConfig.run(`
@@ -102,9 +102,9 @@ const seed = async () => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [dish2Id, 'Ensalada Caprese', 'Ensalada fresca con tomate, mozzarella y albahaca', 9.00, 'entrante', 'rest-1', 1, new Date().toISOString(), new Date().toISOString()])
 
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish2Id, ingredientsRest1[0].id, 0.4])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish2Id, ingredientsRest1[1].id, 0.3])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish2Id, ingredientsRest1[4].id, 0.03])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish2Id, ingredientsRest1[0]!.id, 0.4])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish2Id, ingredientsRest1[1]!.id, 0.3])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish2Id, ingredientsRest1[4]!.id, 0.03])
 
         const dish3Id = randomUUID()
         await dbConfig.run(`
@@ -112,9 +112,9 @@ const seed = async () => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [dish3Id, 'Bruschetta', 'Pan tostado con tomate, ajo y aceite de oliva', 7.50, 'entrante', 'rest-1', 1, new Date().toISOString(), new Date().toISOString()])
 
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish3Id, ingredientsRest1[0].id, 0.2])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish3Id, ingredientsRest1[2].id, 0.05])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish3Id, ingredientsRest1[3].id, 0.01])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish3Id, ingredientsRest1[0]!.id, 0.2])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish3Id, ingredientsRest1[2]!.id, 0.05])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dish3Id, ingredientsRest1[3]!.id, 0.01])
 
         await dbConfig.run(`
             INSERT OR IGNORE INTO dishes (id, name, description, price, category, restaurant_id, available, created_at, updated_at)
@@ -147,9 +147,9 @@ const seed = async () => {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `, [dishNapoliId, 'Pizza Napolitana', 'Pizza al estilo napolitano con tomate y mozzarella', 14.00, 'principal', 'rest-2', 1, new Date().toISOString(), new Date().toISOString()])
 
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dishNapoliId, ingredientsRest2[0].id, 0.5])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dishNapoliId, ingredientsRest2[1].id, 0.02])
-        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dishNapoliId, ingredientsRest2[2].id, 0.3])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dishNapoliId, ingredientsRest2[0]!.id, 0.5])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dishNapoliId, ingredientsRest2[1]!.id, 0.02])
+        await dbConfig.run(`INSERT OR IGNORE INTO dish_ingredients (dish_id, ingredient_id, quantity) VALUES (?, ?, ?)`, [dishNapoliId, ingredientsRest2[2]!.id, 0.3])
 
         await dbConfig.run(`
             INSERT OR IGNORE INTO dishes (id, name, description, price, category, restaurant_id, available, created_at, updated_at)
