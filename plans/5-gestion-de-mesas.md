@@ -86,11 +86,11 @@ Que cada restaurante tenga sus mesas modeladas (número, descripción, capacidad
 - [ ] 15. Actualizar `docs/dominio/modelo-datos.md` y `glosario.md` (5 min)
 
 **web-admin**
-- [ ] 16. Crear `features/tables/models/table.model.ts` y `services/table.service.ts` (`environment.apiUrl`) (5 min)
-- [ ] 17. Crear `features/tables/store/table.store.ts` (signals, `loading`/`error`, `firstValueFrom`) (10 min)
-- [ ] 18. Crear `pages/table-list` (tabla con número, descripción, capacidad, estado y botones editar/borrar) (10 min)
-- [ ] 19. Crear `pages/table-form` (crear/editar con validación) (10 min)
-- [ ] 20. Crear `tables.routes.ts`, registrarlo en `app.routes.ts` y añadir enlace en el dashboard del restaurante; verificar con `npm run build -w @resttek/web-admin` (5 min)
+- [x] 16. Crear `features/tables/models/table.model.ts` y `services/table.service.ts` (`environment.apiUrl`) (5 min)
+- [x] 17. Crear `features/tables/store/table.store.ts` (signals, `loading`/`error`, `firstValueFrom`) (10 min)
+- [x] 18. Crear `pages/table-list` (tabla con número, descripción, capacidad, estado y botones editar/borrar) (10 min)
+- [x] 19. Crear `pages/table-form` (crear/editar con validación) (10 min)
+- [x] 20. Crear `tables.routes.ts`, registrarlo en `app.routes.ts` y añadir enlace en el dashboard del restaurante; verificar con `npm run build -w @resttek/web-admin` (5 min)
 
 **web-empleados**
 - [ ] 21. Crear `features/tables` (model, service con `getAll` y `updateStatus`, store con polling) (10 min)

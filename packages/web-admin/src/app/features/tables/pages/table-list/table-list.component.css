@@ -1,0 +1,14 @@
+.table-number {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.badge-ocupada {
+  background: var(--red-glow);
+  color: var(--red);
+}
+
+.badge-reservada {
+  background: rgba(250, 204, 21, 0.15);
+  color: var(--yellow);
+}
