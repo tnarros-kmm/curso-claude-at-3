@@ -41,4 +41,4 @@ Run from the repo root (Node 22+, npm 10+):
 ## Other
 
 - `scripts/seed-issues.sh` creates GitHub issues from `scripts/issues.json` (needs `gh` and `jq`; see `scripts/README.md`).
-- The directory is not a git repository, and CodeGraph init fails here ("not a recognized project").
+- The directory is a git repository (default branch `main`). CodeGraph init previously failed here ("not a recognized project"); there is no `.codegraph/` index yet.

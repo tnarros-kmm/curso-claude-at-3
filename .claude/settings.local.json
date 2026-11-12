@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__slack__slack_post_message"
+    ],
+    "ask": [
+      "mcp__slack__slack_reply_to_thread"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "context7",
+    "slack"
+  ]
+}
