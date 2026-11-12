@@ -1,18 +1,21 @@
 ---
 name: plan-feature
-description: Planifica una nueva funcionalidad o el arreglo de un error usando una plantilla común (objetivo, alcance, archivos afectados, tareas de 5-10 min y criterios de aceptación) y guarda el plan en plans/<num-issue>-<breve-descripcion>.md. Úsala cuando el usuario pida planificar, diseñar o preparar una feature, un bug o una issue antes de implementarla.
-argument-hint: <num-issue> <descripción de la funcionalidad o error>
+description: Planifica una nueva funcionalidad o el arreglo de un error usando una plantilla común (objetivo, alcance, archivos afectados, tareas de 5-10 min y criterios de aceptación) y guarda el plan en plans/<num-issue>-<breve-descripcion>.md. Obtiene la issue con GitHub CLI (gh) y publica el plan como comentario en ella. Úsala cuando el usuario pida planificar, diseñar o preparar una feature, un bug o una issue antes de implementarla.
+argument-hint: <num-issue | url-issue>
 ---
 
 # plan-feature
 
-Genera un plan de implementación con un formato uniforme para todo el equipo. **Solo planifica: no modifiques código de `src/` ni de `test/`.**
+Genera un plan de implementación con un formato uniforme para todo el equipo a partir de una issue de GitHub (leída con `gh`) y lo publica como comentario de esa issue. **Solo planifica: no modifiques código de `src/` ni de `test/`.**
 
 ## Pasos
 
-1. **Obtener datos de entrada** a partir de `$ARGUMENTS` o de la conversación:
-   - Número de issue (`<num-issue>`). Si no se ha indicado, pregúntalo al usuario antes de continuar.
-   - Descripción de la funcionalidad o del error. Si es un error, pide o localiza los pasos para reproducirlo y el comportamiento esperado.
+1. **Obtener la issue con `gh`** a partir de `$ARGUMENTS` o de la conversación:
+   - El usuario debe indicar el **número** (`42`, `#42`) o la **URL** de la issue (`https://github.com/<owner>/<repo>/issues/42`). Si no lo ha hecho, pídeselo antes de continuar; no lo inventes ni lo deduzcas.
+   - Comprueba que `gh` está disponible y autenticado (`gh auth status`). Si no, díselo al usuario y detente.
+   - Lee la issue: `gh issue view <num-o-url> --json number,title,body,labels,state,url,comments`. Con URL de otro repositorio, añade `--repo <owner>/<repo>`.
+   - Extrae `<num-issue>`, título, descripción, etiquetas y comentarios relevantes. Si la issue no existe o está cerrada, avísalo al usuario y pregunta si continuar.
+   - Si es un error, localiza en la issue los pasos para reproducirlo y el comportamiento esperado; si faltan, pídelos al usuario.
 2. **Explorar el código** antes de planificar:
    - Usa CodeGraph (`codegraph_explore`, o el CLI de solo lectura) antes que búsquedas amplias con Read/Glob/Grep, siguiendo las reglas de CodeGraph del `CLAUDE.md` global.
    - Lee `CLAUDE.md` del proyecto y respeta la arquitectura por capas (`routes → controllers → services → repositories → db`), los convenios de nombres (snake_case en la API, camelCase en funciones/parámetros) y el estilo.
@@ -23,10 +26,14 @@ Genera un plan de implementación con un formato uniforme para todo el equipo. *
    - Crea la carpeta `plans/` si no existe.
    - `<breve-descripcion>` en minúsculas, kebab-case, sin tildes ni caracteres especiales, 2-5 palabras (ej.: `plans/42-paginar-listado-vendehumos.md`).
    - Si el archivo ya existe, muéstralo al usuario y pregunta antes de sobrescribirlo.
-5. **Responder** con la ruta del archivo creado y un resumen de 2-3 líneas. Señala cualquier suposición o duda abierta.
-6. **Notificar en Slack** (siempre, al terminar): envía un informe resumido al canal `curso-claude-ed3` (ID `C0CGZ01R9M2`) con la herramienta MCP `slack_post_message` (cárgala con ToolSearch si hace falta). Usa directamente ese ID como `channel_id`: no llames a `slack_list_channels` ni hagas consultas previas, para ahorrar llamadas a la API de Slack.
+5. **Publicar el plan como comentario de la issue** con `gh`:
+   - Usa el archivo guardado como cuerpo: `gh issue comment <num-issue> --body-file plans/<num-issue>-<breve-descripcion>.md` (añade `--repo <owner>/<repo>` si la issue es de otro repositorio).
+   - No edites ni borres comentarios existentes; añade uno nuevo.
+   - Si el comando falla, indícalo al usuario con el error y no reintentes en bucle.
+6. **Responder** con la URL del comentario (o de la issue), la ruta del archivo creado y un resumen de 2-3 líneas. Señala cualquier suposición o duda abierta.
+7. **Notificar en Slack** (siempre, al terminar): envía un informe resumido al canal `curso-claude-ed3` (ID `C0CGZ01R9M2`) con la herramienta MCP `slack_post_message` (cárgala con ToolSearch si hace falta). Usa directamente ese ID como `channel_id`: no llames a `slack_list_channels` ni hagas consultas previas, para ahorrar llamadas a la API de Slack.
    - El mensaje debe resaltar el autor en negrita de Slack: `*tnarros*`.
-   - Contenido (breve, en español): autor (`*tnarros*`), skill ejecutada (`plan-feature`), número de issue y título, ruta del plan creado, resumen de 2-3 líneas (objetivo y nº de tareas) y suposiciones o dudas abiertas, si las hay.
+   - Contenido (breve, en español): autor (`*tnarros*`), skill ejecutada (`plan-feature`), número de issue y título, ruta del plan creado, enlace a la issue, resumen de 2-3 líneas (objetivo y nº de tareas) y suposiciones o dudas abiertas, si las hay.
    - Ejemplo: `📝 *tnarros* ha planificado *JIRA-16 · paginar listado* → plans/JIRA-16-paginar-listado.md (8 tareas). Dudas abiertas: ninguna.`
    - Si el envío falla (canal no encontrado, error de la herramienta), indícalo al usuario en la respuesta; no reintentes en bucle.
 
